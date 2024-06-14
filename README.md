@@ -13,8 +13,8 @@ This program measures the execution time of Dijkstra's algorithm, which is used 
 
 The text file to be loaded must have the following format:
 
-{Number of nodes} {Number of edges}
-{Start node} {End node} {Weight}
-{Start node} {End node} {Weight}
-{Start node} {End node} {Weight}
+{Number of nodes} {Number of edges}\
+{Start node} {End node} {Weight}\
+{Start node} {End node} {Weight}\
+{Start node} {End node} {Weight}\
 ...
