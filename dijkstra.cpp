@@ -9,6 +9,55 @@
 std::vector<std::vector<int>> matrix;
 int nodes, edges;
 
+void dijkstra(int startNode, std::string name)
+{
+    std::vector<int> distance(nodes, INT_MAX);
+    std::vector<bool> visited(nodes, false);
+    distance[startNode - 1] = 0;
+
+    for (int count = 0; count < nodes - 1; ++count)
+    {
+        int minDistance = INT_MAX;
+        int minIndex = -1;
+
+        for (int i = 0; i < nodes; ++i)
+        {
+            if (!visited[i] && distance[i] <= minDistance)
+            {
+                minDistance = distance[i];
+                minIndex = i;
+            }
+        }
+
+        visited[minIndex] = true;
+
+        for (int i = 0; i < nodes; ++i)
+        {
+            if (!visited[i] && matrix[minIndex][i] != -1 && distance[minIndex] != INT_MAX &&
+                distance[minIndex] + matrix[minIndex][i] < distance[i])
+            {
+                distance[i] = distance[minIndex] + matrix[minIndex][i];
+            }
+        }
+    }
+
+    std::ofstream exitFile(name);
+
+    exitFile << "";
+    for (int i = 0; i < nodes; ++i)
+    {
+        if (distance[i] == INT_MAX)
+        {
+            exitFile << "-1 ";
+        }
+        else
+        {
+            exitFile << distance[i] << " ";
+        }
+    }
+    exitFile.close();
+}
+
 void generateRandomGraph()
 {
     int nodes;
@@ -78,6 +127,7 @@ void loadFile(const std::string name)
             matrix[node1 - 1][node2 - 1] = weight;
         }
     }
+    file.close();
 }
 
 int main()
@@ -101,8 +151,9 @@ int main()
         case '1':
         {
             std::string name;
-            std::cout << "\nNazwa pliku: ";
+            std::cout << "\nFile name: ";
             std::cin >> name;
+            name += ".txt";
             loadFile(name);
             break;
         }
@@ -125,10 +176,20 @@ int main()
         }
         case '4':
         {
+            int startNode;
+            std::string name;
+            std::cout << "\nEnter the start node: ";
+            std::cin >> startNode;
+            std::cout << "\nResults file name: ";
+            std::cin >> name;
+            name += ".txt";
+            dijkstra(startNode, name);
+
             break;
         }
         case '5':
         {
+
             break;
         }
         case '0':
@@ -138,6 +199,7 @@ int main()
         default:
         {
             std::cout << "\nIncorrect choice!\n";
+            std::system("pause");
             break;
         }
         }
