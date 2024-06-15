@@ -29,20 +29,16 @@ void generateRandomGraph()
         return;
     }
 
-    // Seed for random number generation
     std::srand(std::time(nullptr));
 
-    // Calculate the number of edges based on the density
     int edges = (density * nodes * (nodes - 1)) / 2;
 
-    // Write the number of nodes and edges to the file
     file << nodes << " " << edges << "\n";
 
-    // Generate edges with random weights
     for (int i = 0; i < edges; i++)
     {
-        int nodeA = rand()%(100-1 + 1) + 1;
-        int nodeB = rand()%(100-1 + 1) + 1;
+        int nodeA = std::rand() % nodes + 1;
+        int nodeB = std::rand() % nodes + 1;
         while (nodeA == nodeB)
         {
             nodeB = std::rand() % nodes;
@@ -88,14 +84,15 @@ int main()
 {
     while (true)
     {
-        std::cout << "Menu wyboru:\n";
-        std::cout << "1. Wczytaj z pliku\n";
-        std::cout << "2. Wygeneruj losowy graf\n";
-        std::cout << "3. Wyswietl graf (macierz/lista)\n";
-        std::cout << "4. Uruchom Dijkstra (macierz/lista)\n";
-        std::cout << "5. Testowanie\n";
-        std::cout << "0. Wyjscie\n";
-        std::cout << "Wybierz opcje: ";
+        std::system("cls");
+        std::cout << "Menu:\n";
+        std::cout << "1. Load from file\n";
+        std::cout << "2. Generate random graph\n";
+        std::cout << "3. Display graph (matrix/list)\n";
+        std::cout << "4. Run Dijkstra (matrix/list)\n";
+        std::cout << "5. Test\n";
+        std::cout << "0. Exit\n";
+        std::cout << "Select option: ";
 
         char choice = getch();
 
@@ -107,14 +104,6 @@ int main()
             std::cout << "\nNazwa pliku: ";
             std::cin >> name;
             loadFile(name);
-            for (int i = 0; i < nodes; ++i)
-            {
-                for (int j = 0; j < nodes; ++j)
-                {
-                    std::cout << matrix[i][j] << " ";
-                }
-                std::cout << std::endl;
-            }
             break;
         }
         case '2':
@@ -124,6 +113,14 @@ int main()
         }
         case '3':
         {
+            for (int i = 0; i < nodes; ++i)
+            {
+                for (int j = 0; j < nodes; ++j)
+                {
+                    std::cout << matrix[i][j] << " ";
+                }
+                std::cout << std::endl;
+            }
             break;
         }
         case '4':
@@ -140,7 +137,7 @@ int main()
         }
         default:
         {
-            std::cout << "\nNiepoprawny wybor!\n";
+            std::cout << "\nIncorrect choice!\n";
             break;
         }
         }
