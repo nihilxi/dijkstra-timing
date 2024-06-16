@@ -7,7 +7,6 @@ This program measures the execution time of Dijkstra's algorithm, which is used 
 1. **Loading a graph from a file**
 2. **Graph generation**
 3. **Graph display (matrix/list)**
-4. **Testing the correctness of the graph**
 
 ## Usage
 
