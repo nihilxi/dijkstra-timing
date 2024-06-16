@@ -12,7 +12,7 @@ std::vector<std::vector<int>> matrix;
 int nodes, edges;
 long double avg;
 
-void dijkstra(int startNode)
+void dijkstra(int startNode, bool print, std::string name)
 {
     std::vector<int> distance(nodes, INT_MAX);
     std::vector<bool> visited(nodes, false);
@@ -42,6 +42,23 @@ void dijkstra(int startNode)
                 distance[i] = distance[minIndex] + matrix[minIndex][i];
             }
         }
+    }
+    if (print)
+    {
+        name += "_graph_results.txt";
+        std::ofstream writeFile(name);
+        for (int i = 0; i < nodes; ++i)
+        {
+            if (distance[i] == INT_MAX)
+            {
+                writeFile << "-1 ";
+            }
+            else
+            {
+                writeFile << distance[i] << " ";
+            }
+        }
+        writeFile.close();
     }
 }
 
@@ -197,23 +214,30 @@ int main()
         {
             int startNode;
             int trials;
+            bool print = false;
             std::string name;
             std::cout << "\nHow many trials?: ";
             std::cin >> trials;
             std::cout << "Enter the start node: ";
             std::cin >> startNode;
-            std::cout << "Enter file name: ";
+            std::cout << "Enter file name for time results: ";
             std::cin >> name;
-            name += ".txt";
-            std::ofstream writeFile(name);
+            std::cout << "Printing graph results? (y/n): ";
+            char choice = getch();
+            if (choice == 'y')
+            {
+                print = true;
+            }
+            std::ofstream writeFile(name + ".txt");
             for (int i = 0; i < trials; i++)
             {
                 start = std::chrono::high_resolution_clock::now();
-                dijkstra(startNode);
+                dijkstra(startNode, print, name);
                 end = std::chrono::high_resolution_clock::now();
                 std::chrono::duration<long double> elapsed = end - start;
                 avg += elapsed.count();
                 writeFile << elapsed.count() << ";\n";
+                print = false;
             }
             avg /= trials;
             std::cout << "Average time: " << avg << "s\n";
