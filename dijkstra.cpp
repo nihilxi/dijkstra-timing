@@ -5,11 +5,14 @@
 #include <ctime>
 #include <conio.h>
 #include <vector>
+#include <chrono>
+#include <time.h>
 
 std::vector<std::vector<int>> matrix;
 int nodes, edges;
+long double avg;
 
-void dijkstra(int startNode, std::string name)
+void dijkstra(int startNode)
 {
     std::vector<int> distance(nodes, INT_MAX);
     std::vector<bool> visited(nodes, false);
@@ -40,22 +43,6 @@ void dijkstra(int startNode, std::string name)
             }
         }
     }
-
-    std::ofstream exitFile(name);
-
-    exitFile << "";
-    for (int i = 0; i < nodes; ++i)
-    {
-        if (distance[i] == INT_MAX)
-        {
-            exitFile << "-1 ";
-        }
-        else
-        {
-            exitFile << distance[i] << " ";
-        }
-    }
-    exitFile.close();
 }
 
 void generateRandomGraph()
@@ -130,8 +117,46 @@ void loadFile(const std::string name)
     file.close();
 }
 
+void printMatrix(char choice)
+{
+    if (choice == '1')
+    {
+        std::cout << "\nMatrix:\n";
+        for (int i = 0; i < nodes; ++i)
+        {
+            for (int j = 0; j < nodes; ++j)
+            {
+                std::cout << matrix[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+    }
+    else if (choice == '2')
+    {
+        std::cout << "\nList:\n";
+        for (int i = 0; i < nodes; ++i)
+        {
+            std::cout << i + 1 << ": ";
+            for (int j = 0; j < nodes; ++j)
+            {
+                if (matrix[i][j] != -1)
+                {
+                    std::cout << j + 1 << "(" << matrix[i][j] << ") ";
+                }
+            }
+            std::cout << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "\nIncorrect choice!\n";
+    }
+    std::system("pause");
+}
+
 int main()
 {
+    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     while (true)
     {
         std::system("cls");
@@ -139,8 +164,7 @@ int main()
         std::cout << "1. Load from file\n";
         std::cout << "2. Generate random graph\n";
         std::cout << "3. Display graph (matrix/list)\n";
-        std::cout << "4. Run Dijkstra (matrix/list)\n";
-        std::cout << "5. Test\n";
+        std::cout << "4. Run Dijkstra\n";
         std::cout << "0. Exit\n";
         std::cout << "Select option: ";
 
@@ -164,32 +188,37 @@ int main()
         }
         case '3':
         {
-            for (int i = 0; i < nodes; ++i)
-            {
-                for (int j = 0; j < nodes; ++j)
-                {
-                    std::cout << matrix[i][j] << " ";
-                }
-                std::cout << std::endl;
-            }
+            std::cout << "\n1. Matrix\n2. List\nSelect option:\n";
+            char choice = getch();
+            printMatrix(choice);
             break;
         }
         case '4':
         {
             int startNode;
+            int trials;
             std::string name;
-            std::cout << "\nEnter the start node: ";
+            std::cout << "\nHow many trials?: ";
+            std::cin >> trials;
+            std::cout << "Enter the start node: ";
             std::cin >> startNode;
-            std::cout << "\nResults file name: ";
+            std::cout << "Enter file name: ";
             std::cin >> name;
             name += ".txt";
-            dijkstra(startNode, name);
-
-            break;
-        }
-        case '5':
-        {
-
+            std::ofstream writeFile(name);
+            for (int i = 0; i < trials; i++)
+            {
+                start = std::chrono::high_resolution_clock::now();
+                dijkstra(startNode);
+                end = std::chrono::high_resolution_clock::now();
+                std::chrono::duration<long double> elapsed = end - start;
+                avg += elapsed.count();
+                writeFile << elapsed.count() << ";\n";
+            }
+            avg /= trials;
+            std::cout << "Average time: " << avg << "s\n";
+            writeFile << avg << ";\n";
+            writeFile.close();
             break;
         }
         case '0':
