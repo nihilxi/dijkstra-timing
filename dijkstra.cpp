@@ -7,10 +7,12 @@
 #include <vector>
 #include <chrono>
 #include <time.h>
+#include <queue>
 
 std::vector<std::vector<int>> matrix;
+std::vector<std::vector<std::pair<int, int>>> list;
 int nodes, edges;
-long double avg;
+long double avg[2];
 
 void dijkstra(int startNode, bool print, std::string name)
 {
@@ -45,7 +47,7 @@ void dijkstra(int startNode, bool print, std::string name)
     }
     if (print)
     {
-        name += "_graph_results.txt";
+        name += "_matrix_results.txt";
         std::ofstream writeFile(name);
         for (int i = 0; i < nodes; ++i)
         {
@@ -59,6 +61,41 @@ void dijkstra(int startNode, bool print, std::string name)
             }
         }
         writeFile.close();
+    }
+}
+
+void dijkstraList(int startNode, bool print)
+{
+    std::vector<int> distance(nodes, INT_MAX);
+    std::vector<bool> visited(nodes, false);
+    distance[startNode - 1] = 0;
+
+    std::priority_queue<std::pair<int, int>, std::vector<std::pair<int, int>>, std::greater<std::pair<int, int>>> pq;
+    pq.push(std::make_pair(0, startNode));
+
+    while (!pq.empty())
+    {
+        int u = pq.top().second;
+        pq.pop();
+
+        if (visited[u - 1])
+        {
+            continue;
+        }
+
+        visited[u - 1] = true;
+
+        for (auto neighbor : list[u - 1])
+        {
+            int v = neighbor.first;
+            int weight = neighbor.second;
+
+            if (!visited[v - 1] && distance[u - 1] != INT_MAX && distance[u - 1] + weight < distance[v - 1])
+            {
+                distance[v - 1] = distance[u - 1] + weight;
+                pq.push(std::make_pair(distance[v - 1], v));
+            }
+        }
     }
 }
 
@@ -105,13 +142,17 @@ void generateRandomGraph()
 
 void loadFile(const std::string name)
 {
+    std::vector<int> row;
+    int node1, node2, weight;
+    matrix.clear();
+    list.clear();
+
     std::ifstream file(name);
     std::string line;
     getline(file, line);
     std::stringstream ss(line);
     ss >> nodes >> edges;
-    int node1, node2, weight;
-    std::vector<int> row;
+
     for (int i = 0; i < nodes; ++i)
     {
         for (int j = 0; j < nodes; ++j)
@@ -121,6 +162,7 @@ void loadFile(const std::string name)
         matrix.push_back(row);
         row.clear();
     }
+
     for (int i = 0; i < edges; i++)
     {
         getline(file, line);
@@ -130,6 +172,18 @@ void loadFile(const std::string name)
         {
             matrix[node1 - 1][node2 - 1] = weight;
         }
+    }
+    for (int i = 0; i < nodes; i++)
+    {
+        std::vector<std::pair<int, int>> temp;
+        for (int j = 0; j < nodes; j++)
+        {
+            if (matrix[i][j] != -1)
+            {
+                temp.push_back(std::make_pair(j, matrix[i][j]));
+            }
+        }
+        list.push_back(temp);
     }
     file.close();
 }
@@ -154,12 +208,9 @@ void printMatrix(char choice)
         for (int i = 0; i < nodes; ++i)
         {
             std::cout << i + 1 << ": ";
-            for (int j = 0; j < nodes; ++j)
+            for (int j = 0; j < list[i].size(); ++j)
             {
-                if (matrix[i][j] != -1)
-                {
-                    std::cout << j + 1 << "(" << matrix[i][j] << ") ";
-                }
+                std::cout << "[" << list[i][j].first + 1 << " " << list[i][j].second << "] ";
             }
             std::cout << std::endl;
         }
@@ -173,7 +224,6 @@ void printMatrix(char choice)
 
 int main()
 {
-    std::chrono::time_point<std::chrono::high_resolution_clock> start, end;
     while (true)
     {
         std::system("cls");
@@ -231,18 +281,32 @@ int main()
             std::ofstream writeFile(name + ".txt");
             for (int i = 0; i < trials; i++)
             {
-                start = std::chrono::high_resolution_clock::now();
+                auto start_matrix = std::chrono::high_resolution_clock::now();
                 dijkstra(startNode, print, name);
-                end = std::chrono::high_resolution_clock::now();
-                std::chrono::duration<long double> elapsed = end - start;
-                avg += elapsed.count();
-                writeFile << elapsed.count() << ";\n";
+                auto end_matrix = std::chrono::high_resolution_clock::now();
+
+                auto start_list = std::chrono::high_resolution_clock::now();
+                dijkstraList(startNode, print);
+                auto end_list = std::chrono::high_resolution_clock::now();
+
+                auto duration_matrix = std::chrono::duration_cast<std::chrono::microseconds>(end_matrix - start_matrix).count();
+                auto duration_list = std::chrono::duration_cast<std::chrono::microseconds>(end_list - start_list).count();
+
+                avg[0] += duration_matrix;
+                avg[1] += duration_list;
+
+                writeFile << duration_matrix << ";";
+                writeFile << duration_list << ";\n";
                 print = false;
             }
-            avg /= trials;
-            std::cout << "Average time: " << avg << "s\n";
-            writeFile << avg << ";\n";
+            avg[0] /= trials;
+            avg[1] /= trials;
+            std::cout << "\nAverage matrix time: " << avg[0] << "s";
+            std::cout << "\nAverage list time: " << avg[1] << "s\n";
+            writeFile << avg[0] << ";";
+            writeFile << avg[1] << ";\n";
             writeFile.close();
+            system("pause");
             break;
         }
         case '0':
